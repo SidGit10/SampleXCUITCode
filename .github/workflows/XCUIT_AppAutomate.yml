@@ -79,7 +79,9 @@ jobs:
 
                 echo "Convert to JUnit-xml"
                 echo $INSTRUMENT_LOG_TEXT_RESULT
-                #echo $INSTRUMENT_LOG_TEXT_RESULT >> instrument_log_text.txt
+                export $INSTRUMENT_LOG_TEXT_RESULT >> instrument_log_text.txt
+                echo "Text file"
+                echo $instrument_log_text.txt
                
                 cat $INSTRUMENT_LOG_TEXT_RESULT | xcpretty -r junit >> junit.xml
 
