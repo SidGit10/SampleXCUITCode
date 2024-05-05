@@ -74,11 +74,15 @@ jobs:
                 INSTRUMENT_LOG_TEXT_RESULT=$(curl -u ${{ secrets.BROWSERSTACK_USERNAME }}:${{ secrets.BROWSERSTACK_ACCESS_KEY }} $INSTRUMENTATION_LOG_URL)
                 echo "Instrumentation log text result: $INSTRUMENT_LOG_TEXT_RESULT"
 
-                # echo "Convert to JUnit-xml"
+                echo "Convert to JUnit-xml"
                 echo $INSTRUMENT_LOG_TEXT_RESULT >> instrument_log_text.txt
                 cat instrument_log_text.txt | xcpretty -r junit >> JUNIT_RESULT.xml
 
-                echo "$JUNIT_RESULT.xml"
+                echo "After conversion- Content of JUnit-xml"
+                cat /build/reports/junit.xml
+
+                echo "Sending test results to test management"
+                curl -k -X POST "https://test-management.browserstack.com/api/v1/import/results/xml/junit" -u "siddhirao_EFftXN:7XEYboWHDzwViv4jSzaJ" -F project_name="TCM_Project" -F "file_path=@./build/reports/junit.xml" -F test_run_name="TCM_TEST_RUN" -F user_email="siddhi.r+demo1@browserstack.com"
        
          
                 
