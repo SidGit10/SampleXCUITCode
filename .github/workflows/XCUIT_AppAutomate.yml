@@ -80,16 +80,8 @@ jobs:
                 echo "Convert to JUnit-xml"
                 echo $INSTRUMENT_LOG_TEXT_RESULT
                 echo $INSTRUMENT_LOG_TEXT_RESULT >> instrument_log_text.txt
-                uses: actions/upload-artifact@v2
-                with:
-                    name: my-text-file
-                    path: instrument_log_text.txt
-
-                uses: actions/download-artifact@v2
-                with:
-                  name: my-text-file
-                  cat my-text-file/generated_file.txt
-                cat my-text-file/generated_file.txt | xcpretty -r junit >> JUNIT_RESULT.xml
+               
+                cat $INSTRUMENT_LOG_TEXT_RESULT >> instrument_log_text.txt | xcpretty -r junit >> JUNIT_RESULT.xml
 
                 echo "After conversion- Content of JUnit-xml"
                 cat ./build/reports/junit.xml
