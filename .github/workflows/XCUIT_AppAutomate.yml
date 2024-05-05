@@ -74,16 +74,16 @@ jobs:
                 echo "Waiting......."
                 sleep 40
                 echo "Get Instrumentation URL log response..."
-                export INSTRUMENT_LOG_TEXT_RESULT=$(curl -u ${{ secrets.BROWSERSTACK_USERNAME }}:${{ secrets.BROWSERSTACK_ACCESS_KEY }} $INSTRUMENTATION_LOG_URL)
-                echo "Instrumentation log text result: $INSTRUMENT_LOG_TEXT_RESULT"
+                export INSTRUMENT_LOG_TEXT_RESULT=$(curl -u ${{ secrets.BROWSERSTACK_USERNAME }}:${{ secrets.BROWSERSTACK_ACCESS_KEY }} $INSTRUMENTATION_LOG_URL) >> ./instrument_log_text.txt
+                #echo "Instrumentation log text result: $INSTRUMENT_LOG_TEXT_RESULT"
 
                 echo "Convert to JUnit-xml"
-                echo $INSTRUMENT_LOG_TEXT_RESULT
-                export $INSTRUMENT_LOG_TEXT_RESULT >> instrument_log_text.txt
+                #echo $INSTRUMENT_LOG_TEXT_RESULT
+                #export $INSTRUMENT_LOG_TEXT_RESULT >> instrument_log_text.txt
                 echo "Text file"
-                echo $instrument_log_text.txt
+                cat ${./instrument_log_text.txt}
                
-                cat $INSTRUMENT_LOG_TEXT_RESULT | xcpretty -r junit >> junit.xml
+                cat ${./instrument_log_text.txt} | xcpretty -r junit >> junit.xml
 
                 echo "After conversion- Content of JUnit-xml"
                 cat ./build/reports/junit.xml
