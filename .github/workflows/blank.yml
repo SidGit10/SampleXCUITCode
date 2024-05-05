@@ -44,6 +44,6 @@ jobs:
                 echo "Test Suite Response: $TEST_SUITE_RESPONSE"
                 export TEST_SUITE_URL=$(echo $TEST_SUITE_RESPONSE | jq -r '.test_suite_url')
                 echo $TEST_SUITE_URL
-                curl -u ${{ secrets.BROWSERSTACK_USERNAME }}:${{ secrets.BROWSERSTACK_ACCESS_KEY }} -X POST "https://api-cloud.browserstack.com/app-automate/xcuitest/v2/build" -d "{\"app\": $(echo $APP_STATUS_RESPONSE | jq -r '.app_url'), \"testSuite\": $(echo $TEST_SUITE_RESPONSE | jq -r '.test_suite_url'), \"devices\": [\"iPhone 15-17\"]}" -H "Content-Type: application/json"
+                curl -u ${{ secrets.BROWSERSTACK_USERNAME }}:${{ secrets.BROWSERSTACK_ACCESS_KEY }} -X POST "https://api-cloud.browserstack.com/app-automate/xcuitest/v2/build" -d "{\"app\": \"$APP_URL\", \"testSuite\": \"$TEST_SUITE_URL\", \"devices\": [\"iPhone 15-17\"]}" -H "Content-Type: application/json"
 
 
