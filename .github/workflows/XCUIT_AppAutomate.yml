@@ -85,7 +85,7 @@ jobs:
                 cat ./build/reports/junit.xml
 
                 echo "Sending test results to test management"
-                curl -k -X POST "https://test-management.browserstack.com/api/v1/import/results/xml/junit" -u "siddhirao_EFftXN:7XEYboWHDzwViv4jSzaJ" -F project_name="TCM_Project" -F "file_path=@./build/reports/junit.xml" -F test_run_name="TCM_TEST_RUN" -F user_email="siddhi.r+demo1@browserstack.com"
+                curl -k -X POST "https://test-management.browserstack.com/api/v1/import/results/xml/junit" -u ${{ secrets.TEST_MANAGEMENT_API_TOKEN }} -F project_name="TCM_Project" -F "file_path=@./build/reports/junit.xml" -F test_run_name="TCM_TEST_RUN"
        
          
                 
