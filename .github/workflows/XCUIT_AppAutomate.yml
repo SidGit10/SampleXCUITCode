@@ -81,7 +81,7 @@ jobs:
                 echo $INSTRUMENT_LOG_TEXT_RESULT
                 #echo $INSTRUMENT_LOG_TEXT_RESULT >> instrument_log_text.txt
                
-                cat $INSTRUMENT_LOG_TEXT_RESULT | xcpretty -r junit >> JUNIT_RESULT.xml
+                cat $INSTRUMENT_LOG_TEXT_RESULT | xcpretty -r junit >> junit.xml
 
                 echo "After conversion- Content of JUnit-xml"
                 cat ./build/reports/junit.xml
