@@ -61,17 +61,20 @@ jobs:
                 echo "Checking build status.."
                 export BUILD_STATUS=$(echo $BUILD_STATUS_RESPONSE | jq -c -r '.status')
                 echo "status: $BUILD_STATUS"
+                while true; do
+           
+                  if [ "$BUILD_STATUS" == "running" ]; then
+                      echo "Build is still running..."
+                      sleep 30 # Wait for 30 seconds before checking again
+                  else
+                    echo "Current status: $BUILD_STATUS. ..."
+                    echo "Getting session ID from the response from above call."
+                    export BROWSERSTACK_SESSION_ID=$(echo $BUILD_STATUS_RESPONSE | jq -c -r '.devices[0].sessions[0].id')
+                    echo "Session ID: $BROWSERSTACK_SESSION_ID"
+                    break         
+                  fi
+                done
                 
-                if [ "$BUILD_STATUS" == "running" ]; then
-                  echo "check"
-                else
-                  echo "uncheck"
-                fi
-                echo "Getting session ID from the response from above call."
-                export BROWSERSTACK_SESSION_ID=$(echo $BUILD_STATUS_RESPONSE | jq -c -r '.devices[0].sessions[0].id')
-                echo "Session ID: $BROWSERSTACK_SESSION_ID"
-                echo "Waiting......."
-                sleep 50
                 
                 echo "Taking build status response's session ID and getting session results..."
                 SESSION_RESULTS="$(curl -u ${{ secrets.BROWSERSTACK_USERNAME }}:${{ secrets.BROWSERSTACK_ACCESS_KEY }}  -X GET "https://api-cloud.browserstack.com/app-automate/xcuitest/v2/builds/$BUILD_ID/sessions/$BROWSERSTACK_SESSION_ID")" 
@@ -80,8 +83,6 @@ jobs:
                 export INSTRUMENTATION_LOG_URL=$(echo $SESSION_RESULTS | jq -c -r '.testcases.data[0].testcases[1].instrumentation_log')
                 echo "Instrumentation log url: $INSTRUMENTATION_LOG_URL"
 
-                echo "Waiting......."
-                sleep 40
                 echo "Get Instrumentation URL log response..."
                 export INSTRUMENT_LOG_TEXT_RESULT=$(curl -u ${{ secrets.BROWSERSTACK_USERNAME }}:${{ secrets.BROWSERSTACK_ACCESS_KEY }} $INSTRUMENTATION_LOG_URL)
                 
