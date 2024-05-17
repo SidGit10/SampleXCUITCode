@@ -67,16 +67,16 @@ jobs:
                       echo "Build is still running..."
                       sleep 30 # Wait for 30 seconds before checking again
                       export BUILD_STATUS=$(echo $BUILD_STATUS_RESPONSE | jq -c -r '.status')
-                  else
-                    echo "Current status: $BUILD_STATUS. ..."
-                    echo "Getting session ID from the response from above call."
-                    export BROWSERSTACK_SESSION_ID=$(echo $BUILD_STATUS_RESPONSE | jq -c -r '.devices[0].sessions[0].id')
-                    echo "Session ID: $BROWSERSTACK_SESSION_ID"
-                    break         
+                   
                   fi
                 done
                 
+                echo "Current status: $BUILD_STATUS. ..."
+                echo "Getting session ID from the response from above call."
                 
+                export BROWSERSTACK_SESSION_ID=$(echo $BUILD_STATUS_RESPONSE | jq -c -r '.devices[0].sessions[0].id')
+                echo "Session ID: $BROWSERSTACK_SESSION_ID"
+                          
                 echo "Taking build status response's session ID and getting session results..."
                 SESSION_RESULTS="$(curl -u ${{ secrets.BROWSERSTACK_USERNAME }}:${{ secrets.BROWSERSTACK_ACCESS_KEY }}  -X GET "https://api-cloud.browserstack.com/app-automate/xcuitest/v2/builds/$BUILD_ID/sessions/$BROWSERSTACK_SESSION_ID")" 
 
