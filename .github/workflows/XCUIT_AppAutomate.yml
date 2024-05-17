@@ -70,11 +70,13 @@ jobs:
 
                       echo "Build status response: $BUILD_STATUS_RESPONSE"
                       export BUILD_STATUS=$(echo $BUILD_STATUS_RESPONSE | jq -c -r '.status')
-                   
+                      echo "Current status: $BUILD_STATUS. ..."
+                       if [ "$BUILD_STATUS" != "running" ]; then
+                       break
+                       fi
                   fi
                 done
-                
-                echo "Current status: $BUILD_STATUS. ..."
+              
                 echo "Getting session ID from the response from above call."
                 
                 export BROWSERSTACK_SESSION_ID=$(echo $BUILD_STATUS_RESPONSE | jq -c -r '.devices[0].sessions[0].id')
