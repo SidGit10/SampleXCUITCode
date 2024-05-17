@@ -66,6 +66,7 @@ jobs:
                   if [ "$BUILD_STATUS" == "running" ]; then
                       echo "Build is still running..."
                       sleep 30 # Wait for 30 seconds before checking again
+                      export BUILD_STATUS=$(echo $BUILD_STATUS_RESPONSE | jq -c -r '.status')
                   else
                     echo "Current status: $BUILD_STATUS. ..."
                     echo "Getting session ID from the response from above call."
