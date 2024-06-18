@@ -93,7 +93,7 @@ jobs:
                 </body>
               </html>" > ./output.html
         
-       # Move HTML report to root level
+      # Move HTML report to root level
       - name: Move HTML report to root level
         run: mv $GITHUB_WORKSPACE/output.html $GITHUB_WORKSPACE/../output.html
 
@@ -101,8 +101,13 @@ jobs:
       - name: Navigate to root directory
         run: cd $GITHUB_WORKSPACE && cd ..
 
+      # List files in the root directory (for verification)
+      - name: List files in root directory
+        run: ls -al
+
       # Upload HTML report as artifact (Optional)
       - name: Upload HTML report as artifact
+        if: success() # Upload artifact only if previous steps were successful
         uses: actions/upload-artifact@v2
         with:
           name: html-report
