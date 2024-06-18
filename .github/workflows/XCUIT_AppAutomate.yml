@@ -22,6 +22,12 @@ jobs:
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '18'
+      - name: Install dependencies
+        run: npm install
 
       - name: 'BrowserStack Env Setup'  # Invokes the setup-env action
         uses: browserstack/github-actions/setup-env@master
@@ -32,7 +38,8 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - name: 'Checkout the repository'
         uses: actions/checkout@v4
-
+      - name: Run script to generate HTML report
+        run: node index.js
       - name: 'Running XCUIT test on App Automate'
         run:  |
                 # # Upload ipa file # #
@@ -106,7 +113,11 @@ jobs:
                 echo "Sending test results to test management"
                 curl -k -X POST "https://test-management.browserstack.com/api/v1/import/results/xml/junit" -u ${{ secrets.TEST_MANAGEMENT_API_TOKEN }} -F project_name="TCM_Project" -F "file_path=@./build/reports/junit.xml" -F test_run_name="TCM_TEST_RUN"
        
-         
+                name: Upload HTML report
+                    uses: actions/upload-artifact@v2
+                    with:
+                      name: html-report
+                      path: output.html
                 
 
 
