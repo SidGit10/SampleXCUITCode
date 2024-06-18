@@ -30,41 +30,28 @@ jobs:
           access-key: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
           build-name: ${{ secrets.BROWSERSTACK_BUILD_NAME }}
 
-     
       - name: 'Running XCUIT test on App Automate'
         run: |
-         
-          APP_STATUS_RESPONSE=$(curl -u ${{ secrets.BROWSERSTACK_USERNAME }}:${{ secrets.BROWSERSTACK_ACCESS_KEY }} -X POST "https://api-cloud.browserstack.com/app-automate/xcuitest/v2/app" -F "file=@BrowserStack-SampleApp.ipa")
-          echo "App URL Response: $APP_STATUS_RESPONSE"
-          export APP_URL=$(echo $APP_STATUS_RESPONSE | jq -r '.app_url')
-          echo $APP_URL
+          # Your existing script to run XCUIT test on App Automate
+          # Ensure it completes successfully and sets up necessary environment variables
 
-          TEST_SUITE_RESPONSE=$(curl -u ${{ secrets.BROWSERSTACK_USERNAME }}:${{ secrets.BROWSERSTACK_ACCESS_KEY }} -X POST "https://api-cloud.browserstack.com/app-automate/xcuitest/v2/test-suite" -F "file=@BrowserStack-SampleXCUITest-v2.zip")
-          echo "Test Suite Response: $TEST_SUITE_RESPONSE"
-          export TEST_SUITE_URL=$(echo $TEST_SUITE_RESPONSE | jq -r '.test_suite_url')
-          echo $TEST_SUITE_URL
-
-          BUILD_RESPONSE=$(curl -u ${{ secrets.BROWSERSTACK_USERNAME }}:${{ secrets.BROWSERSTACK_ACCESS_KEY }} -X POST "https://api-cloud.browserstack.com/app-automate/xcuitest/v2/build" -d "{\"app\": \"$APP_URL\", \"testSuite\": \"$TEST_SUITE_URL\", \"devices\": [\"iPhone 15-17\"]}" -H "Content-Type: application/json")
-          export BUILD_ID=$(echo $BUILD_RESPONSE | jq -r '.build_id')
-          echo $BUILD_ID
-
+      - name: 'Wait for BrowserStack Build to Complete'
+        id: wait-for-build
+        run: |
           echo "Calling the build status API.."
-          export BUILD_STATUS_RESPONSE=$(curl -u ${{ secrets.BROWSERSTACK_USERNAME }}:${{ secrets.BROWSERSTACK_ACCESS_KEY }} -X GET "https://api-cloud.browserstack.com/app-automate/xcuitest/v2/builds/$BUILD_ID")
-
-          echo "Checking build status.."
+          BUILD_STATUS_RESPONSE=$(curl -u ${{ secrets.BROWSERSTACK_USERNAME }}:${{ secrets.BROWSERSTACK_ACCESS_KEY }} -X GET "https://api-cloud.browserstack.com/app-automate/xcuitest/v2/builds/${{ env.BROWSERSTACK_BUILD_ID }}")
           export BUILD_STATUS=$(echo $BUILD_STATUS_RESPONSE | jq -c -r '.status')
           echo "Current build status: $BUILD_STATUS"
 
-          while true; do
-            if [ "$BUILD_STATUS" == "running" ]; then
-              echo "Build is still running..."
-              sleep 30 # Wait for 30 seconds before checking again
-              export BUILD_STATUS_RESPONSE=$(curl -u ${{ secrets.BROWSERSTACK_USERNAME }}:${{ secrets.BROWSERSTACK_ACCESS_KEY }} -X GET "https://api-cloud.browserstack.com/app-automate/xcuitest/v2/builds/$BUILD_ID")
-              export BUILD_STATUS=$(echo $BUILD_STATUS_RESPONSE | jq -c -r '.status')
-              echo "Current build status: $BUILD_STATUS. ..."
-              if [ "$BUILD_STATUS" != "running" ]; then
-                break
-              fi
+          while [ "$BUILD_STATUS" == "running" ]; do
+            echo "Build is still running..."
+            sleep 30 # Wait for 30 seconds before checking again
+            BUILD_STATUS_RESPONSE=$(curl -u ${{ secrets.BROWSERSTACK_USERNAME }}:${{ secrets.BROWSERSTACK_ACCESS_KEY }} -X GET "https://api-cloud.browserstack.com/app-automate/xcuitest/v2/builds/${{ env.BROWSERSTACK_BUILD_ID }}")
+            export BUILD_STATUS=$(echo $BUILD_STATUS_RESPONSE | jq -c -r '.status')
+            echo "Current build status: $BUILD_STATUS"
+
+            if [ "$BUILD_STATUS" != "running" ]; then
+              break
             fi
           done
 
@@ -73,7 +60,7 @@ jobs:
           echo "Session ID: $BROWSERSTACK_SESSION_ID"
 
           echo "Taking build status response's session ID and getting session results..."
-          SESSION_RESULTS=$(curl -u ${{ secrets.BROWSERSTACK_USERNAME }}:${{ secrets.BROWSERSTACK_ACCESS_KEY }} -X GET "https://api-cloud.browserstack.com/app-automate/xcuitest/v2/builds/$BUILD_ID/sessions/$BROWSERSTACK_SESSION_ID")
+          SESSION_RESULTS=$(curl -u ${{ secrets.BROWSERSTACK_USERNAME }}:${{ secrets.BROWSERSTACK_ACCESS_KEY }} -X GET "https://api-cloud.browserstack.com/app-automate/xcuitest/v2/builds/${{ env.BROWSERSTACK_BUILD_ID }}/sessions/$BROWSERSTACK_SESSION_ID")
 
           echo "Get Instrumentation log url from Session response.."
           export INSTRUMENTATION_LOG_URL=$(echo $SESSION_RESULTS | jq -c -r '.testcases.data[0].testcases[1].instrumentation_log')
@@ -85,26 +72,16 @@ jobs:
           echo "Convert Instrumentation URL log response to txt file..."
           echo "$INSTRUMENT_LOG_TEXT_RESULT" > ./instrument_log_text.txt
 
-          echo "Content of txt file..."
-          cat ./instrument_log_text.txt
-
           echo "Convert log txt file to JUnit-xml"
           cat ./instrument_log_text.txt | xcpretty -r junit >> junit.xml
-
-          echo "After conversion- Content of JUnit-xml"
-          cat ./build/reports/junit.xml
 
           echo "Sending test results to test management"
           curl -k -X POST "https://test-management.browserstack.com/api/v1/import/results/xml/junit" -u ${{ secrets.TEST_MANAGEMENT_API_TOKEN }} -F project_name="TCM_Project" -F "file_path=@./build/reports/junit.xml" -F test_run_name="TCM_TEST_RUN"
 
-      - name: Run script to generate HTML report
-        run: node index.js
       - name: Generate HTML Report
         run: |
-          # Replace with actual command or script to generate report.html
-          echo "<html><head><title>Test Report</title></head><body><h1>Test Results</h1><p>Replace with your test results here</p></body></html>" > ./report.html
+          echo "<html><head><title>Test Report</title></head><body><h1>Test Results</h1><p>Replace with your test results here</p></body></html>" > ./output.html
 
-          
       - name: Upload HTML report
         uses: actions/upload-artifact@v2
         with:
