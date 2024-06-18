@@ -28,10 +28,12 @@ jobs:
         with:
           username: ${{ secrets.BROWSERSTACK_USERNAME }}
           access-key: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
+          build-name: ${{ secrets.BROWSERSTACK_BUILD_NAME }}
 
      
       - name: 'Running XCUIT test on App Automate'
         run: |
+          export secrets.BROWSERSTACK_BUILD_NAME
           APP_STATUS_RESPONSE=$(curl -u ${{ secrets.BROWSERSTACK_USERNAME }}:${{ secrets.BROWSERSTACK_ACCESS_KEY }} -X POST "https://api-cloud.browserstack.com/app-automate/xcuitest/v2/app" -F "file=@BrowserStack-SampleApp.ipa")
           echo "App URL Response: $APP_STATUS_RESPONSE"
           export APP_URL=$(echo $APP_STATUS_RESPONSE | jq -r '.app_url')
