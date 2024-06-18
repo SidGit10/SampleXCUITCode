@@ -1,9 +1,10 @@
 var axios = require('axios');
 const fs = require('fs');
-
-var buildID = process.env.BROWSERSTACK_BUILD_NAME;
-var BROWSERSTACK_USERNAME = process.env.BROWSERSTACK_USERNAME;
-var BROWSERSTACK_ACCESS_KEY = process.env.BROWSERSTACK_ACCESS_KEY;
+  
+ 
+var buildID = ${{ secrets.BROWSERSTACK_BUILD_NAME }};
+var BROWSERSTACK_USERNAME = ${{ secrets.BROWSERSTACK_USERNAME }};
+var BROWSERSTACK_ACCESS_KEY = ${{ secrets.BROWSERSTACK_ACCESS_KEY }};
 var product = "app-automate";
 
 var configbuilds = {
