@@ -92,10 +92,10 @@ jobs:
                 </body>
               </html>" > ./output.html
           echo "Move HTML report to root level"
-          mv output.html ../output.html
+          mv output.html ./output.html
 
       - name: Upload HTML report as artifact
         uses: actions/upload-artifact@v2
         with:
           name: html-report
-          path: ../output.html
+          path: ./output.html
