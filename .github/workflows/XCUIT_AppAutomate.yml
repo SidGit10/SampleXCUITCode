@@ -78,22 +78,21 @@ jobs:
           echo "Sending test results to test management"
           curl -k -X POST "https://test-management.browserstack.com/api/v1/import/results/xml/junit" -u ${{ secrets.TEST_MANAGEMENT_API_TOKEN }} -F project_name="TCM_Project" -F "file_path=@./build/reports/junit.xml" -F test_run_name="TCM_TEST_RUN"
 
-      - name: Generate HTML Report
+      - name: Run script to generate HTML report
         run: |
           echo "<html>
                 <head>
-                  <title>Test Report</title>
+                  <title>Test Report for Build ${{ env.BROWSERSTACK_BUILD_ID }}</title>
                 </head>
                 <body>
-                  <h1>Test Results for BrowserStack Build: ${{ env.BROWSERSTACK_BUILD_ID }}</h1>
-                  <p>Replace with your test results here</p>
+                  <h1>Test Results</h1>
                   <p>Build Status: $BUILD_STATUS</p>
                   <p>Session ID: $BROWSERSTACK_SESSION_ID</p>
                   <!-- Add more details as needed -->
                 </body>
               </html>" > ./output.html
 
-      - name: Upload HTML report
+      - name: Upload HTML report as artifact
         uses: actions/upload-artifact@v2
         with:
           name: html-report
