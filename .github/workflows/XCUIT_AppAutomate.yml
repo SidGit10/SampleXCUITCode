@@ -79,22 +79,25 @@ jobs:
           curl -k -X POST "https://test-management.browserstack.com/api/v1/import/results/xml/junit" -u ${{ secrets.TEST_MANAGEMENT_API_TOKEN }} -F project_name="TCM_Project" -F "file_path=@./build/reports/junit.xml" -F test_run_name="TCM_TEST_RUN"
 
           echo "Run script to generate HTML report"
-       
+          echo "$BUILD_STATUS"
+          echo "$BROWSERSTACK_SESSION_ID"
           echo "<html>
                 <head>
                   <title>Test Report for Build ${{ env.BROWSERSTACK_BUILD_ID }}</title>
                 </head>
                 <body>
                   <h1>Test Results</h1>
-                  <p>Build Status: "$BUILD_STATUS"</p>
-                  <p>Session ID: "$BROWSERSTACK_SESSION_ID"</p>
+                  <p>Build Status: echo "$BUILD_STATUS"</p>
+                  <p>Session ID: echo "$BROWSERSTACK_SESSION_ID"</p>
                   <!-- Add more details as needed -->
                 </body>
               </html>" > ./output.html
         
-
+      - name: Move HTML report to root level
+        run: mv $GITHUB_WORKSPACE/output.html ./output.html
+        
       - name: Upload HTML report as artifact
         uses: actions/upload-artifact@v2
         with:
           name: html-report
-          path: output.html
+          path: ./output.html
