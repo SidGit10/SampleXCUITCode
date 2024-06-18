@@ -29,13 +29,7 @@ jobs:
           username: ${{ secrets.BROWSERSTACK_USERNAME }}
           access-key: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
 
-      - name: Run script to generate HTML report
-        run: node index.js
-        env:
-          BROWSERSTACK_USERNAME: ${{ secrets.BROWSERSTACK_USERNAME }}
-          BROWSERSTACK_ACCESS_KEY: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
-          BROWSERSTACK_BUILD_NAME: 'your-build-name' # replace with your build name
-
+     
       - name: 'Running XCUIT test on App Automate'
         run: |
           APP_STATUS_RESPONSE=$(curl -u ${{ secrets.BROWSERSTACK_USERNAME }}:${{ secrets.BROWSERSTACK_ACCESS_KEY }} -X POST "https://api-cloud.browserstack.com/app-automate/xcuitest/v2/app" -F "file=@BrowserStack-SampleApp.ipa")
@@ -101,6 +95,14 @@ jobs:
           echo "Sending test results to test management"
           curl -k -X POST "https://test-management.browserstack.com/api/v1/import/results/xml/junit" -u ${{ secrets.TEST_MANAGEMENT_API_TOKEN }} -F project_name="TCM_Project" -F "file_path=@./build/reports/junit.xml" -F test_run_name="TCM_TEST_RUN"
 
+      - name: Run script to generate HTML report
+        run: node index.js
+      - name: Generate HTML Report
+        run: |
+          # Replace with actual command or script to generate report.html
+          echo "<html><head><title>Test Report</title></head><body><h1>Test Results</h1><p>Replace with your test results here</p></body></html>" > ./report.html
+
+          
       - name: Upload HTML report
         uses: actions/upload-artifact@v2
         with:
