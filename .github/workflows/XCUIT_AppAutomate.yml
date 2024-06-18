@@ -80,7 +80,18 @@ jobs:
 
       - name: Generate HTML Report
         run: |
-          echo "<html><head><title>Test Report</title></head><body><h1>Test Results</h1><p>Replace with your test results here</p></body></html>" > ./output.html
+          echo "<html>
+                <head>
+                  <title>Test Report</title>
+                </head>
+                <body>
+                  <h1>Test Results for BrowserStack Build: ${{ env.BROWSERSTACK_BUILD_ID }}</h1>
+                  <p>Replace with your test results here</p>
+                  <p>Build Status: $BUILD_STATUS</p>
+                  <p>Session ID: $BROWSERSTACK_SESSION_ID</p>
+                  <!-- Add more details as needed -->
+                </body>
+              </html>" > ./output.html
 
       - name: Upload HTML report
         uses: actions/upload-artifact@v2
