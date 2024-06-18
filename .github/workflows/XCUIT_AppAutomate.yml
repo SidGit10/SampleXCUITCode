@@ -86,8 +86,8 @@ jobs:
                 </head>
                 <body>
                   <h1>Test Results</h1>
-                  <p>Build Status: $BUILD_STATUS</p>
-                  <p>Session ID: $BROWSERSTACK_SESSION_ID</p>
+                  <p>Build Status: "$BUILD_STATUS"</p>
+                  <p>Session ID: "$BROWSERSTACK_SESSION_ID"</p>
                   <!-- Add more details as needed -->
                 </body>
               </html>" > ./output.html
@@ -98,4 +98,4 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: html-report
-          path: output.html
+          path: ../output.html
