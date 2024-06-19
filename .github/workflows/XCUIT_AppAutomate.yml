@@ -97,11 +97,11 @@ jobs:
                 
      
                 echo "Generate HTML Report"
-        
-                BUILD_FRAMEWORK="XCUITest"
+       
+       
                 echo "<html>
                 <head>
-                  <title>Test Report for App Automate</title>
+                  <title>Test Report for Build ${{ env.BROWSERSTACK_BUILD_NAME }}</title>
                   <style>
                     body { font-family: Arial, sans-serif; margin: 40px; }
                     h1 { color: #2E4053; }
@@ -109,8 +109,8 @@ jobs:
                     .details { margin-top: 20px; }
                     .details p { margin: 5px 0; }
                     .details span { font-weight: bold; }
-                    .header { text-align: center; margin-bottom: 20px; }
-                    .header img { width: 200px; }
+                    .header { text-align: center; margin-bottom: 20px; position: relative; }
+                    .header img { width: 200px; position: absolute; top: 0; right: 0; }
                     .summary-table { margin-top: 20px; }
                     .summary-table table { width: 100%; border-collapse: collapse; }
                     .summary-table th, .summary-table td { border: 1px solid #ddd; padding: 8px; }
@@ -127,19 +127,21 @@ jobs:
                       <thead>
                         <tr>
                           <th>Project Name</th>
-                          <th>Build Status</th>
                           
+                          <th>Build Framework</th>
                           <th>Duration</th>
                           
+                          <th>Build Status</th>
                         </tr>
                       </thead>
                       <tbody>
                         <tr>
                           <td>$PROJECT_NAME</td>
-                          <td>$BUILD_STATUS</td>
-                          
+                          <
+                          <td>$BUILD_FRAMEWORK</td>
                           <td>$BUILD_DURATION</td>
-                         
+                          
+                          <td>$BUILD_STATUS</td>
                         </tr>
                       </tbody>
                     </table>
