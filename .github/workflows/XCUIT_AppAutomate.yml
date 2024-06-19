@@ -117,10 +117,10 @@ jobs:
                     <!-- Add more details as needed -->
                   </div>
                 </body>
-                </html>" > $GITHUB_WORKSPACE/output.html
+                </html>" > ./output.html
 
       - name: Upload HTML report as artifact
         uses: actions/upload-artifact@v2
         with:
           name: html-report
-          path: $GITHUB_WORKSPACE/output.html
+          path: ./output.html
