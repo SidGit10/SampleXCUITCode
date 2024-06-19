@@ -92,13 +92,16 @@ jobs:
                 export BUILD_STATUS=$(echo $BUILD_STATUS_RESPONSE | jq -c -r '.status')
                 export BUILD_FRAMEWORK=$(echo $BUILD_STATUS_RESPONSE | jq -c -r '.framework')
                 export BUILD_DURATION=$(echo $BUILD_STATUS_RESPONSE | jq -c -r '.duration')
-                
-                
+                export PROJECT_NAME=$(echo $BUILD_STATUS_RESPONSE | jq -r '.input_capabilities.project')
+          
                 
      
+                echo "Generate HTML Report"
+        
+                BUILD_FRAMEWORK="XCUITest"
                 echo "<html>
                 <head>
-                  <title>Test Report for Build ${{ env.BROWSERSTACK_BUILD_NAME }}</title>
+                  <title>Test Report for App Automate</title>
                   <style>
                     body { font-family: Arial, sans-serif; margin: 40px; }
                     h1 { color: #2E4053; }
@@ -106,13 +109,43 @@ jobs:
                     .details { margin-top: 20px; }
                     .details p { margin: 5px 0; }
                     .details span { font-weight: bold; }
+                    .header { text-align: center; margin-bottom: 20px; }
+                    .header img { width: 200px; }
+                    .summary-table { margin-top: 20px; }
+                    .summary-table table { width: 100%; border-collapse: collapse; }
+                    .summary-table th, .summary-table td { border: 1px solid #ddd; padding: 8px; }
+                    .summary-table th { background-color: #f2f2f2; }
                   </style>
                 </head>
                 <body>
-                  <h1>Test Results for Build ${{ env.BROWSERSTACK_BUILD_NAME }}</h1>
+                  <div class='header'>
+                    <h1>Web Automation Report Dashboard</h1>
+                    <img src='https://browserstack.wpenginepowered.com/wp-content/themes/browserstack/img/bstack-logo-global.svg' alt='BrowserStack Logo'>
+                  </div>
+                  <div class='summary-table'>
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>Project Name</th>
+                          <th>Build Status</th>
+                          
+                          <th>Duration</th>
+                          
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td>$PROJECT_NAME</td>
+                          <td>$BUILD_STATUS</td>
+                          
+                          <td>$BUILD_DURATION</td>
+                         
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
                   <div class='details'>
-                    <p><span>Build Framework:</span> ${{ secrets.BROWSERSTACK_BUILD_FRAMEWORK }}</p>
-                    <p><span>Build Status:</span> $BUILD_STATUS</p>
+                    <p><span>Build Framework:</span> $BUILD_FRAMEWORK</p>
                     <p><span>Session ID:</span> $BROWSERSTACK_SESSION_ID</p>
                     <!-- Add more details as needed -->
                   </div>
