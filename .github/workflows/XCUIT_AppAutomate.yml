@@ -95,32 +95,32 @@ jobs:
                 
                 
                 
-                echo "Run script to generate HTML report"
-         
+     
                 echo "<html>
                 <head>
-                  <title>Test Report for Build ${{ env.BROWSERSTACK_BUILD_ID }}</title>
+                  <title>Test Report for Build ${{ env.BROWSERSTACK_BUILD_NAME }}</title>
+                  <style>
+                    body { font-family: Arial, sans-serif; margin: 40px; }
+                    h1 { color: #2E4053; }
+                    p { font-size: 14px; }
+                    .details { margin-top: 20px; }
+                    .details p { margin: 5px 0; }
+                    .details span { font-weight: bold; }
+                  </style>
                 </head>
                 <body>
-                  <h1>Test Results</h1>
-                  <p>Build Status: $BUILD_STATUS</p>
-                  <p>Build Framework: $BUILD_FRAMEWORK</p>
-                  <p>Session ID: $BROWSERSTACK_SESSION_ID</p>
-                  <p>Build duration: $BUILD_DURATION</p>
-                  <!-- Add more details as needed -->
+                  <h1>Test Results for Build ${{ env.BROWSERSTACK_BUILD_NAME }}</h1>
+                  <div class='details'>
+                    <p><span>Build Framework:</span> ${{ secrets.BROWSERSTACK_BUILD_FRAMEWORK }}</p>
+                    <p><span>Build Status:</span> $BUILD_STATUS</p>
+                    <p><span>Session ID:</span> $BROWSERSTACK_SESSION_ID</p>
+                    <!-- Add more details as needed -->
+                  </div>
                 </body>
-                </html>" > ./output.html
-        
-    
-      # Upload HTML report as artifact (Optional)
+                </html>" > $GITHUB_WORKSPACE/output.html
+
       - name: Upload HTML report as artifact
-       
         uses: actions/upload-artifact@v2
         with:
           name: html-report
-          path: output.html
-                
-
-
-
-                
+          path: $GITHUB_WORKSPACE/output.html
