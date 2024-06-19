@@ -90,8 +90,8 @@ jobs:
                 export BUILD_STATUS_RESPONSE=$(curl -u ${{ secrets.BROWSERSTACK_USERNAME }}:${{ secrets.BROWSERSTACK_ACCESS_KEY }} -X GET "https://api-cloud.browserstack.com/app-automate/xcuitest/v2/builds/$BUILD_ID")
 
                 export BUILD_STATUS=$(echo $BUILD_STATUS_RESPONSE | jq -c -r '.status')
-                export BUILD_NAME=$(echo $BUILD_STATUS_RESPONSE | jq -c -r '.name')
-                export BUILD_PUBLIC_URL=$(echo $BUILD_STATUS_RESPONSE | jq -c -r '.public_url')
+                export BUILD_FRAMEWORK=$(echo $BUILD_STATUS_RESPONSE | jq -c -r '.framework')
+                export BUILD_DURATION=$(echo $BUILD_STATUS_RESPONSE | jq -c -r '.duration')
                 
                 
                 
@@ -103,10 +103,10 @@ jobs:
                 </head>
                 <body>
                   <h1>Test Results</h1>
-                  <p>Build Status: $BUILD_NAME</p>
                   <p>Build Status: $BUILD_STATUS</p>
+                  <p>Build Framework: $BUILD_FRAMEWORK</p>
                   <p>Session ID: $BROWSERSTACK_SESSION_ID</p>
-                  <p>Build Status: $BUILD_PUBLIC_URL</p>
+                  <p>Build duration: $BUILD_DURATION</p>
                   <!-- Add more details as needed -->
                 </body>
                 </html>" > ./output.html
