@@ -77,32 +77,48 @@ jobs:
               
                 echo "Getting session ID from the build response."
                 
-                export BROWSERSTACK_SESSION_ID=$(echo $BUILD_STATUS_RESPONSE | jq -c -r '.devices[0].sessions[0].id')
-                echo "Session ID: $BROWSERSTACK_SESSION_ID"
-                          
-                echo "Taking build status response's session ID and getting session results..."
-                SESSION_RESULTS="$(curl -u ${{ secrets.BROWSERSTACK_USERNAME }}:${{ secrets.BROWSERSTACK_ACCESS_KEY }}  -X GET "https://api-cloud.browserstack.com/app-automate/xcuitest/v2/builds/$BUILD_ID/sessions/$BROWSERSTACK_SESSION_ID")" 
+                # Iterate over each device
+                device_count=$(echo $BUILD_STATUS_RESPONSE | jq '.devices | length')
 
-                echo "Get Instrumentation log url from Session response.."
-                export INSTRUMENTATION_LOG_URL=$(echo $SESSION_RESULTS | jq -c -r '.testcases.data[0].testcases[1].instrumentation_log')
-                echo "Instrumentation log url: $INSTRUMENTATION_LOG_URL"
+                for (( i=0; i<$device_count; i++ ))
+                do
+                  echo "Processing device $((i+1)) out of $device_count"
+                  # Iterate over each session for the current device
+                  session_count=$(echo $BUILD_STATUS_RESPONSE | jq ".devices[$i].sessions | length")
+                  for (( j=0; j<$session_count; j++ ))
+                  do
+                    echo "Processing session $((j+1)) out of $session_count for device $((i+1))"
+        
+                    export BROWSERSTACK_SESSION_ID=$(echo $BUILD_STATUS_RESPONSE | jq -c -r ".devices[$i].sessions[$j].id")
+                    echo "Session ID: $BROWSERSTACK_SESSION_ID"
+        
+                    echo "Taking build status response's session ID and getting session results..."
+                    SESSION_RESULTS="$(curl -u ${BROWSERSTACK_USERNAME}:${BROWSERSTACK_ACCESS_KEY} -X GET "https://api-cloud.browserstack.com/app-automate/xcuitest/v2/builds/$BUILD_ID/sessions/$BROWSERSTACK_SESSION_ID")"
+        
+                    echo "Get Instrumentation log url from Session response.."
+                    export INSTRUMENTATION_LOG_URL=$(echo $SESSION_RESULTS | jq -c -r '.testcases.data[0].testcases[1].instrumentation_log')
+                    echo "Instrumentation log url: $INSTRUMENTATION_LOG_URL"
+        
+                    echo "Get Instrumentation URL log response..."
+                    export INSTRUMENT_LOG_TEXT_RESULT=$(curl -u ${BROWSERSTACK_USERNAME}:${BROWSERSTACK_ACCESS_KEY} $INSTRUMENTATION_LOG_URL)
+        
+                    echo "Convert Instrumentation URL log response to txt file... "
+                    echo "$INSTRUMENT_LOG_TEXT_RESULT" > ./instrument_log_text_$BROWSERSTACK_SESSION_ID.txt
+        
+                    echo "Content of txt file... "
+                    cat ./instrument_log_text_$BROWSERSTACK_SESSION_ID.txt
+        
+                    echo "Convert log txt file to JUnit-xml"
+                    cat ./instrument_log_text_$BROWSERSTACK_SESSION_ID.txt | xcpretty -r junit >> junit_$BROWSERSTACK_SESSION_ID.xml
+        
+                    echo "After conversion- Content of JUnit-xml"
+                    cat ./junit_$BROWSERSTACK_SESSION_ID.xml
+        
+                    echo "Sending test results to test management"
+                    curl -k -X POST "https://test-management.browserstack.com/api/v1/import/results/xml/junit" -u ${TEST_MANAGEMENT_API_TOKEN} -F project_name="TCM_Project_X_U" -F "file_path=@./junit_$BROWSERSTACK_SESSION_ID.xml" -F test_run_name="TCM_TEST_RUN"
+                  done
+                  done
 
-                echo "Get Instrumentation URL log response..."
-                export INSTRUMENT_LOG_TEXT_RESULT=$(curl -u ${{ secrets.BROWSERSTACK_USERNAME }}:${{ secrets.BROWSERSTACK_ACCESS_KEY }} $INSTRUMENTATION_LOG_URL)
+
+
                 
-                echo "Convert Instrumentation URL log response to txt file... "
-                echo "$INSTRUMENT_LOG_TEXT_RESULT" > ./instrument_log_text.txt
-
-                echo "Content of txt file... "
-                cat ./instrument_log_text.txt
-                
-                echo "Convert log txt file to JUnit-xml"
-               
-                cat ./instrument_log_text.txt | xcpretty -r junit >> junit.xml
-
-                echo "After conversion- Content of JUnit-xml"
-                cat ./build/reports/junit.xml
-                
-                echo "Sending test results to test management"
-                curl -k -X POST "https://test-management.browserstack.com/api/v1/import/results/xml/junit" -u ${{ secrets.TEST_MANAGEMENT_API_TOKEN }} -F project_name="TCM_Project_X" -F "file_path=@./build/reports/junit.xml" -F test_run_name="TCM_TEST_RUN"
-       
