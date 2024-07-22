@@ -99,20 +99,25 @@ jobs:
                     export INSTRUMENTATION_LOG_URL=$(echo $SESSION_RESULTS | jq -c -r '.testcases.data[0].testcases[1].instrumentation_log')
                     echo "Instrumentation log url: $INSTRUMENTATION_LOG_URL"
         
+                    echo "Get Instrumentation log url from Session response.."
+                    export INSTRUMENTATION_LOG_URL=$(echo $SESSION_RESULTS | jq -c -r '.testcases.data[0].testcases[1].instrumentation_log')
+                    echo "Instrumentation log url: $INSTRUMENTATION_LOG_URL"
+
                     echo "Get Instrumentation URL log response..."
                     export INSTRUMENT_LOG_TEXT_RESULT=$(curl -u ${{ secrets.BROWSERSTACK_USERNAME }}:${{ secrets.BROWSERSTACK_ACCESS_KEY }} $INSTRUMENTATION_LOG_URL)
-                    
+                
                     echo "Convert Instrumentation URL log response to txt file... "
-                    echo "$INSTRUMENT_LOG_TEXT_RESULT" > ./instrument_log_text_$BROWSERSTACK_SESSION_ID.txt
-        
+                    echo "$INSTRUMENT_LOG_TEXT_RESULT" > ./instrument_log_text.txt
+
                     echo "Content of txt file... "
-                    cat ./instrument_log_text_$BROWSERSTACK_SESSION_ID.txt
-        
+                    cat ./instrument_log_text.txt
+                
                     echo "Convert log txt file to JUnit-xml"
-                    cat ./instrument_log_text_$BROWSERSTACK_SESSION_ID.txt | xcpretty -r junit >> junit_$BROWSERSTACK_SESSION_ID.xml
-        
+               
+                    cat ./instrument_log_text.txt | xcpretty -r junit >> junit.xml
+
                     echo "After conversion- Content of JUnit-xml"
-                    cat ./junit_$BROWSERSTACK_SESSION_ID.xml
+                    cat ./build/reports/junit.xml
         
                     echo "Sending test results to test management"
                     curl -k -X POST "https://test-management.browserstack.com/api/v1/import/results/xml/junit" -u ${{ secrets.TEST_MANAGEMENT_API_TOKEN }} -F project_name="TCM_Project_X_UU" -F "file_path=@./build/reports/junit.xml" -F test_run_name="TCM_TEST_RUN"
