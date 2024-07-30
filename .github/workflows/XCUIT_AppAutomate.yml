@@ -131,8 +131,7 @@ jobs:
                     done
                   done
                 done
-                echo "After exit loop conversion- Content of JUnit-xml"
-                cat ./sample.xml
+               
                 #!/bin/bash
 
                 # Input XML file
@@ -141,8 +140,14 @@ jobs:
 
                 # Create or clear the output file
                 echo "<?xml version='1.0' encoding='UTF-8'?>" > "$output_file"
-                echo "<testsuites name='SampleXCUITests.xctest' tests='2' failures='0'>" >> "$output_file"
-                echo "  <testsuite name='SampleXCUITests.SampleXCUITests' tests='2' failures='0'>" >> "$output_file"
+
+                # Count the number of <testcase> elements
+                test_count=$(grep -c "<testcase" "$input_file")
+                failure_count=$(grep -c "failure" "$input_file")
+                
+                # Start the <testsuites> element with dynamic counts
+                echo "<testsuites name='SampleXCUITests.xctest' tests='$test_count' failures='$failure_count'>" >> "$output_file"
+                echo "  <testsuite name='SampleXCUITests.SampleXCUITests' tests='$test_count' failures='$failure_count'>" >> "$output_file"
 
                 # Extract and append each <testcase> element from the input file
                 grep "<testcase" "$input_file" >> "$output_file"
@@ -150,12 +155,12 @@ jobs:
                 # Close the XML tags
                 echo "  </testsuite>" >> "$output_file"
                 echo "</testsuites>" >> "$output_file"
-
+                  
                 echo "Combined XML content into $output_file"
                 cat ./combined_testsuites.xml
 
                 echo "Sending test results to test management"
-                curl -k -X POST "https://test-management.browserstack.com/api/v1/import/results/xml/junit" -u ${{ secrets.TEST_MANAGEMENT_API_TOKEN }} -F project_name="TCM_Project_30_Test" -F "file_path=@./combined_testsuites.xml" -F test_run_name="TCM_TEST_RUN"
+                curl -k -X POST "https://test-management.browserstack.com/api/v1/import/results/xml/junit" -u ${{ secrets.TEST_MANAGEMENT_API_TOKEN }} -F project_name="TCM_Project_Updated_Test" -F "file_path=@./combined_testsuites.xml" -F test_run_name="TCM_TEST_RUN"
                  
 
                 
