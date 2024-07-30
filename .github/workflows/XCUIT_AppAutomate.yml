@@ -1,136 +1,69 @@
-# This is a basic workflow to help you get started with Actions
-####
 name: CI
 
-# Controls when the workflow will run
 on:
-  # Triggers the workflow on push or pull request events but only for the "main" branch
   push:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
-
-  # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
   build:
-    # The type of runner that the job will run on
     runs-on: ubuntu-latest
 
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-
-      - name: 'BrowserStack Env Setup'  # Invokes the setup-env action
+      - name: 'BrowserStack Env Setup'
         uses: browserstack/github-actions/setup-env@master
         with:
           username:  ${{ secrets.BROWSERSTACK_USERNAME }}
           access-key: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
             
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - name: 'Checkout the repository'
         uses: actions/checkout@v4
 
       - name: 'Running XCUIT test on App Automate'
         run:  |
-                # # Upload ipa file # #
                 APP_STATUS_RESPONSE=$(curl -u ${{ secrets.BROWSERSTACK_USERNAME }}:${{ secrets.BROWSERSTACK_ACCESS_KEY }} -X POST "https://api-cloud.browserstack.com/app-automate/xcuitest/v2/app" -F "file=@BrowserStack-SampleApp.ipa")
-                echo "App URL Response: $APP_STATUS_RESPONSE"
                 export APP_URL=$(echo $APP_STATUS_RESPONSE | jq -r '.app_url')
-                echo $APP_URL
                 
-                # # Upload test Suite file # #
                 TEST_SUITE_RESPONSE=$(curl -u ${{ secrets.BROWSERSTACK_USERNAME }}:${{ secrets.BROWSERSTACK_ACCESS_KEY }} -X POST "https://api-cloud.browserstack.com/app-automate/xcuitest/v2/test-suite" -F "file=@BrowserStack-SampleXCUITest-v2.zip")
-                echo "Test Suite Response: $TEST_SUITE_RESPONSE"
                 export TEST_SUITE_URL=$(echo $TEST_SUITE_RESPONSE | jq -r '.test_suite_url')
-                echo $TEST_SUITE_URL
 
-                # # Upload build using app_url and test-suite_url # #
                 BUILD_RESPONSE=$(curl -u ${{ secrets.BROWSERSTACK_USERNAME }}:${{ secrets.BROWSERSTACK_ACCESS_KEY }} -X POST "https://api-cloud.browserstack.com/app-automate/xcuitest/v2/build" -d "{\"app\": \"$APP_URL\", \"testSuite\": \"$TEST_SUITE_URL\", \"devices\": [\"iPhone 15-17\"]}" -H "Content-Type: application/json")
                 export BUILD_ID=$(echo $BUILD_RESPONSE | jq -r '.build_id')
-                echo $BUILD_ID
               
-                echo "Calling the build status API.."
-            
-                export BUILD_STATUS_RESPONSE=$(curl -u ${{ secrets.BROWSERSTACK_USERNAME }}:${{ secrets.BROWSERSTACK_ACCESS_KEY }} -X GET "https://api-cloud.browserstack.com/app-automate/xcuitest/v2/builds/$BUILD_ID")
-
-                echo "Checking build status.."
-                export BUILD_STATUS=$(echo $BUILD_STATUS_RESPONSE | jq -c -r '.status')
-                echo "Current build status: $BUILD_STATUS"
-                
                 while true; do
-           
-                  if [ "$BUILD_STATUS" == "running" ]; then
-                      echo "Build is still running..."
-                      sleep 30 # Wait for 30 seconds before checking again
-                      export BUILD_STATUS_RESPONSE=$(curl -u ${{ secrets.BROWSERSTACK_USERNAME }}:${{ secrets.BROWSERSTACK_ACCESS_KEY }} -X GET "https://api-cloud.browserstack.com/app-automate/xcuitest/v2/builds/$BUILD_ID")
-
-                      export BUILD_STATUS=$(echo $BUILD_STATUS_RESPONSE | jq -c -r '.status')
-                      echo "Current build status: $BUILD_STATUS. ..."
-                       if [ "$BUILD_STATUS" != "running" ]; then
-                       break
-                       fi
+                  BUILD_STATUS_RESPONSE=$(curl -u ${{ secrets.BROWSERSTACK_USERNAME }}:${{ secrets.BROWSERSTACK_ACCESS_KEY }} -X GET "https://api-cloud.browserstack.com/app-automate/xcuitest/v2/builds/$BUILD_ID")
+                  BUILD_STATUS=$(echo $BUILD_STATUS_RESPONSE | jq -c -r '.status')
+                  if [ "$BUILD_STATUS" != "running" ]; then
+                    break
                   fi
+                  sleep 30
                 done
-              
-                echo "Getting session ID from the build response."
-                
-                # Iterate over each device
-                device_count=$(echo $BUILD_STATUS_RESPONSE | jq '.devices | length')
 
+                device_count=$(echo $BUILD_STATUS_RESPONSE | jq '.devices | length')
                 for (( i=0; i<$device_count; i++ ))
                 do
-                  echo "Processing device $((i+1)) out of $device_count"
-                  # Iterate over each session for the current device
                   session_count=$(echo $BUILD_STATUS_RESPONSE | jq ".devices[$i].sessions | length")
                   for (( j=0; j<$session_count; j++ ))
                   do
-                    echo "Processing session $((j+1)) out of $session_count for device $((i+1))"
-        
-                    export BROWSERSTACK_SESSION_ID=$(echo $BUILD_STATUS_RESPONSE | jq -c -r ".devices[$i].sessions[$j].id")
-                    echo "Session ID: $BROWSERSTACK_SESSION_ID"
-        
-                    echo "Taking build status response's session ID and getting session results..."
-                    SESSION_RESULTS="$(curl -u ${{ secrets.BROWSERSTACK_USERNAME }}:${{ secrets.BROWSERSTACK_ACCESS_KEY }}  -X GET "https://api-cloud.browserstack.com/app-automate/xcuitest/v2/builds/$BUILD_ID/sessions/$BROWSERSTACK_SESSION_ID")" 
+                    BROWSERSTACK_SESSION_ID=$(echo $BUILD_STATUS_RESPONSE | jq -c -r ".devices[$i].sessions[$j].id")
+                    SESSION_RESULTS=$(curl -u ${{ secrets.BROWSERSTACK_USERNAME }}:${{ secrets.BROWSERSTACK_ACCESS_KEY }}  -X GET "https://api-cloud.browserstack.com/app-automate/xcuitest/v2/builds/$BUILD_ID/sessions/$BROWSERSTACK_SESSION_ID") 
 
-                    echo "Session Results: $SESSION_RESULTS"
-
-                    # Iterate over each test case
                     testcase_count=$(echo $SESSION_RESULTS | jq '.testcases.data | length')
                     for (( k=0; k<$testcase_count; k++ ))
                     do
-                      # Get the number of individual test case entries within the current test case data
                       testcase_entry_count=$(echo $SESSION_RESULTS | jq ".testcases.data[$k].testcases | length")
                       for (( l=0; l<$testcase_entry_count; l++ ))
                       do
-                        echo "Processing test case $((l+1)) out of $testcase_entry_count for session $((j+1))"
-                        export INSTRUMENTATION_LOG_URL=$(echo $SESSION_RESULTS | jq -c -r ".testcases.data[$k].testcases[$l].instrumentation_log")
-                        echo "Instrumentation log url: $INSTRUMENTATION_LOG_URL"
-                   
-                        echo "Get Instrumentation URL log response..."
-                        export INSTRUMENT_LOG_TEXT_RESULT=$(curl -u ${{ secrets.BROWSERSTACK_USERNAME }}:${{ secrets.BROWSERSTACK_ACCESS_KEY }} $INSTRUMENTATION_LOG_URL)
-                
-                        echo "Convert Instrumentation URL log response to txt file... "
+                        INSTRUMENTATION_LOG_URL=$(echo $SESSION_RESULTS | jq -c -r ".testcases.data[$k].testcases[$l].instrumentation_log")
+                        INSTRUMENT_LOG_TEXT_RESULT=$(curl -u ${{ secrets.BROWSERSTACK_USERNAME }}:${{ secrets.BROWSERSTACK_ACCESS_KEY }} $INSTRUMENTATION_LOG_URL)
                         echo "$INSTRUMENT_LOG_TEXT_RESULT" > ./instrument_log_text.txt
 
-                        echo "Content of txt file... "
-                        cat ./instrument_log_text.txt
-                
-                        echo "Convert log txt file to JUnit-xml"
-               
                         cat ./instrument_log_text.txt | xcpretty -r junit >> junit.xml
-
-                        echo "After conversion- Content of JUnit-xml"
-                        cat ./build/reports/junit.xml
-        
-                        echo "Sending test results to test management"
-                        curl -k -X POST "https://test-management.browserstack.com/api/v1/import/results/xml/junit" -u ${{ secrets.TEST_MANAGEMENT_API_TOKEN }} -F project_name="TCM_Project_30_Update" -F "file_path=@./build/reports/junit.xml" -F test_run_name="TCM_TEST_RUN"
-                    done
-                    
+                      done
                     done
                   done
                 done
 
-                
+                curl -k -X POST "https://test-management.browserstack.com/api/v1/import/results/xml/junit" -u ${{ secrets.TEST_MANAGEMENT_API_TOKEN }} -F project_name="TCM_Project_30_Update11" -F "file_path=@./junit.xml" -F test_run_name="TCM_TEST_RUN"
