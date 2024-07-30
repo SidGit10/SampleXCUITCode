@@ -122,11 +122,11 @@ jobs:
                
                          # Create or append to the junit.xml file
                         if [ ! -f ./build/reports/junit.xml ]; then
-                        cat ./instrument_log_text.txt | xcpretty -r junit > junit.xml
-                        cat junit.xml >> ./sample.xml
+                        cat ./instrument_log_text.txt | xcpretty -r junit > junit.xml >> ./sample.xml
+                        
                         else
-                        cat ./instrument_log_text.txt | xcpretty -r junit >> junit.xml
-                        cat junit.xml >> ./sample.xml
+                        cat ./instrument_log_text.txt | xcpretty -r junit >> junit.xml >> ./sample.xml
+                       
                         fi
                         echo "Current Content of JUnit-xml"
                         cat ./sample.xml
