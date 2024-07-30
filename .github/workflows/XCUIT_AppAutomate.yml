@@ -133,6 +133,26 @@ jobs:
                 done
                 echo "After exit loop conversion- Content of JUnit-xml"
                 cat ./sample.xml
+                #!/bin/bash
+
+                # Input XML file
+                input_file=./sample.xml
+                output_file="combined_testsuites.xml"
+
+                # Create or clear the output file
+                echo "<?xml version='1.0' encoding='UTF-8'?>" > "$output_file"
+                echo "<testsuites name='SampleXCUITests.xctest' tests='2' failures='0'>" >> "$output_file"
+                echo "  <testsuite name='SampleXCUITests.SampleXCUITests' tests='2' failures='0'>" >> "$output_file"
+
+                # Extract and append each <testcase> element from the input file
+                grep "<testcase" "$input_file" >> "$output_file"
+
+                # Close the XML tags
+                echo "  </testsuite>" >> "$output_file"
+                echo "</testsuites>" >> "$output_file"
+
+                echo "Combined XML content into $output_file"
+
                 echo "Sending test results to test management"
                 curl -k -X POST "https://test-management.browserstack.com/api/v1/import/results/xml/junit" -u ${{ secrets.TEST_MANAGEMENT_API_TOKEN }} -F project_name="TCM_Project_30_Test" -F "file_path=@./sample.xml" -F test_run_name="TCM_TEST_RUN"
                  
