@@ -61,6 +61,7 @@ jobs:
                         echo "$INSTRUMENT_LOG_TEXT_RESULT" > ./instrument_log_text.txt
 
                         cat ./instrument_log_text.txt | xcpretty -r junit >> junit.xml
+                        echo "printtttttt"
                       done
                     done
                   done
