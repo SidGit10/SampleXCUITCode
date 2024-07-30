@@ -120,10 +120,14 @@ jobs:
                 
                         echo "Convert log txt file to JUnit-xml"
                
+                         # Create or append to the junit.xml file
+                        if [ ! -f junit.xml ]; then
+                        cat ./instrument_log_text.txt | xcpretty -r junit > junit.xml
+                        else
                         cat ./instrument_log_text.txt | xcpretty -r junit >> junit.xml
-
-                        echo "After conversion- Content of JUnit-xml"
-                        cat ./build/reports/junit.xml
+                        fi
+                        echo "Current Content of JUnit-xml"
+                        cat junit.xml
         
                      done
                     
