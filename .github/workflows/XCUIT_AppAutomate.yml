@@ -139,7 +139,7 @@ jobs:
                 echo "After exit loop conversion- Content of JUnit-xml"
                 cat ./sample.xml
                 echo "Sending test results to test management"
-                curl -k -X POST "https://test-management.browserstack.com/api/v1/import/results/xml/junit" -u ${{ secrets.TEST_MANAGEMENT_API_TOKEN }} -F project_name="TCM_Project_30_Update111" -F "file_path=@./build/reports/junit.xml" -F test_run_name="TCM_TEST_RUN"
+                curl -k -X POST "https://test-management.browserstack.com/api/v1/import/results/xml/junit" -u ${{ secrets.TEST_MANAGEMENT_API_TOKEN }} -F project_name="TCM_Project_30_Test" -F "file_path=@./sample.xml" -F test_run_name="TCM_TEST_RUN"
                  
 
                 
