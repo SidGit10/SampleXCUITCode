@@ -123,11 +123,13 @@ jobs:
                          # Create or append to the junit.xml file
                         if [ ! -f ./build/reports/junit.xml ]; then
                         cat ./instrument_log_text.txt | xcpretty -r junit > junit.xml
+                        cat junit.xml >> sample.xml
                         else
                         cat ./instrument_log_text.txt | xcpretty -r junit >> junit.xml
+                        cat junit.xml >> sample.xml
                         fi
                         echo "Current Content of JUnit-xml"
-                        cat junit.xml
+                        cat sample.xml
         
                      done
                     
@@ -135,7 +137,7 @@ jobs:
                   done
                 done
                 echo "After exit loop conversion- Content of JUnit-xml"
-                cat ./build/reports/junit.xml
+                cat ./build/reports/sample.xml
                 echo "Sending test results to test management"
                 curl -k -X POST "https://test-management.browserstack.com/api/v1/import/results/xml/junit" -u ${{ secrets.TEST_MANAGEMENT_API_TOKEN }} -F project_name="TCM_Project_30_Update111" -F "file_path=@./build/reports/junit.xml" -F test_run_name="TCM_TEST_RUN"
                  
