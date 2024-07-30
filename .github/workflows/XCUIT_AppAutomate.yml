@@ -137,7 +137,7 @@ jobs:
                 # Input XML file
                 input_file=./sample.xml
                 echo "contentttt"
-                echo $input_file
+                cat ./sample.xml
                 output_file=./combined_testsuites.xml
 
                 # Create or clear the output file
