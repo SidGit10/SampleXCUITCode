@@ -137,7 +137,7 @@ jobs:
 
                 # Input XML file
                 input_file=./sample.xml
-                output_file="combined_testsuites.xml"
+                output_file=./combined_testsuites.xml
 
                 # Create or clear the output file
                 echo "<?xml version='1.0' encoding='UTF-8'?>" > "$output_file"
@@ -152,6 +152,7 @@ jobs:
                 echo "</testsuites>" >> "$output_file"
 
                 echo "Combined XML content into $output_file"
+                cat ./combined_testsuites.xml
 
                 echo "Sending test results to test management"
                 curl -k -X POST "https://test-management.browserstack.com/api/v1/import/results/xml/junit" -u ${{ secrets.TEST_MANAGEMENT_API_TOKEN }} -F project_name="TCM_Project_30_Test" -F "file_path=@./sample.xml" -F test_run_name="TCM_TEST_RUN"
